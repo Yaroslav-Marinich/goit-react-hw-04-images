@@ -2,34 +2,24 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'components/Modal/Modal';
 
-export const ImageGalleryItem = ({ item }) => {
-  const [selectedImg, setSelectedImg] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+export const ImageGalleryItem = ({ item: { webformatURL, tags, largeImageURL } }) => {
+   const [showModal, setShowModal] = useState(false);
+ 
 
-  const toggleModal = () => {
-    setShowModal(!showModal);
-  };
-
-  const handleImageClick = () => {
-    setSelectedImg(item.largeImageURL);
-    toggleModal();
-  };
-
-  const { largeImageURL, tags } = item;
 
   return (
     <div className="ImageGalleryItem">
-      <div onClick={handleImageClick}>
+      <div onClick={() => setShowModal(true)}>
         <img
           className="ImageGalleryItem-image"
           loading="lazy"
-          src={item.webformatURL}
-          alt={item.tags}
+          src={webformatURL}
+          alt={tags}
           width="320"
         />
       </div>
       {showModal && (
-        <Modal onClose={toggleModal}>
+        <Modal onClose={() => setShowModal(false)}>
           <img loading="lazy" src={largeImageURL} alt={tags} />
         </Modal>
       )}
