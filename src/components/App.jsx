@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from 'react';
 import * as API from '../servise/pixabay-api';
-import { Component } from 'react';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Buttons/Button';
 import { Header } from './Header/Header';
@@ -7,70 +7,61 @@ import { Loader } from './Loader/Loader';
 import { SearchBar } from './SearchBar/SearchBar';
 import '../styles.css';
 
-export class App extends Component {
-  state = {
-    gallery: [],
-    search: '',
-    page: 1,
-    isLoading: false,
-    error: false,
-  };
+export const App = () => {
+  const [gallery, setGallery] = useState([]);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  componentDidUpdate(prevProps, prevState) {
-    const { search, page } = this.state;
-
-    if (prevState.search !== search || prevState.page !== page) {
-      this.fetchGallery(search, page);
+  useEffect(() => {
+    if (search.trim() !== '' || page !== 1) {
+      fetchGallery(search, page);
     }
-  }
+  }, [search, page]);
 
-  fetchGallery = async (name, page) => {
+  const fetchGallery = async (name, page) => {
     try {
-      this.setState({ isLoading: true });
+      setIsLoading(true);
 
       const images = await API.fetchGallery(name, page);
 
-      this.setState(prevState => ({
-        gallery: [...prevState.gallery, ...images],
-      }));
+      setGallery(prevState => [...prevState, ...images]);
     } catch (error) {
       console.log(error);
+      setError(true);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
   };
 
-  searchImages = ({ name }) => {
+  const searchImages = ({ name }) => {
     if (name.trim()) {
-      this.setState({
-        gallery: [],
-        search: name,
-        page: 1,
-        isLoading: false,
-      });
+      setGallery([]);
+      setSearch(name);
+      setPage(1);
+      setIsLoading(false);
+      setError(false);
     }
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  render() {
-    const { gallery, isLoading, error, page } = this.state;
-    return (
-      <div className="App">
-        <Header>
-          <SearchBar onSubmit={this.searchImages} />
-        </Header>
-        {error && <p>'Oops, something went wrong! Please, try again'</p>}
-        {isLoading ? <Loader /> : <ImageGallery items={gallery} />}
+  return (
+    <div className="App">
+      <Header>
+        <SearchBar onSubmit={searchImages} />
+      </Header>
+      {error && <p>'Oops, something went wrong! Please, try again'</p>}
+      {isLoading ? <Loader /> : <ImageGallery items={gallery} />}
 
-        {Math.ceil(gallery?.length / 12) >= page && !isLoading && (
-          <Button onClick={this.loadMore} />
-        )}
-      </div>
-    );
-  }
-}
+      {Math.ceil(gallery?.length / 12) >= page && !isLoading && (
+        <Button onClick={loadMore} />
+      )}
+    </div>
+  );
+};
+
+export default App;
